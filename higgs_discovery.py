@@ -7,7 +7,6 @@ import vector
 import time
 import requests
 
-MeV = 0.001
 GeV = 1.0
 
 import atlasopenmagic as atom
@@ -52,22 +51,22 @@ def calc_mass(lep_pt, lep_eta, lep_phi, lep_e):
     return invariant_mass
 
 
-def cut_trig_match(lep_trigmatch):
+def cut_trig_match(lep_trigmatch): # NOT NEEDED FOR THE DISTIPUTER NODESEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
     trigmatch = lep_trigmatch
     cut1 = ak.sum(trigmatch, axis=1) >= 1
     return cut1
 
-def cut_trig(trigE,trigM):
+def cut_trig(trigE,trigM):# NOT NEEDED FOR THE DISTIPUTER NODESEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
     return trigE | trigM
 
 
-def ID_iso_cut(IDel,IDmu,isoel,isomu,pid):
+def ID_iso_cut(IDel,IDmu,isoel,isomu,pid): # NOT NEEDED FOR THE DISTIPUTER NODESWEWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
     thispid = pid
     return (ak.sum(((thispid == 13) & IDmu & isomu) | ((thispid == 11) & IDel & isoel), axis=1) == 4)
 # Define empty list to hold all data for this sample
 # We open an MC data file with simulated ttbar events (data set ID 410470)
 value = samples[r'Background $Z,t\bar{t},t\bar{t}+V,VVV$']["list"][0]
-print(value)
+#print(value)
 
 # This is now appended to our file path to retrieve the root file
 background_ttbar_path = value
@@ -78,7 +77,7 @@ weight_variables = ["filteff","kfac","xsec","mcWeight","ScaleFactor_PILEUP", "Sc
 
 # For example, see below for the weights corresponding to muon rejection
 tree["ScaleFactor_MUON"].arrays(library = "ak")
-print(weight_variables)
+#print(weight_variables)
 # luminosity of data_D
 lumi = 0.105 #Luminosity of periodD in data 15 is 0.105 fb-1
 
@@ -89,7 +88,7 @@ event = tree.arrays()[0]
 total_weight = lumi * 1000 / event["sum_of_weights"]
 for variable in weight_variables:
     total_weight = total_weight * event[variable]
-print(f"{total_weight = }")
+#print(f"{total_weight = }")
 
 def calc_weight(weight_variables, events):
     total_weight = lumi * 1000 / events["sum_of_weights"]
@@ -97,7 +96,7 @@ def calc_weight(weight_variables, events):
         total_weight = total_weight * abs(events[variable])
     return total_weight
 # Verify that we get the same answer
-print(calc_weight(weight_variables, event))
+#print(calc_weight(weight_variables, event))
 
 sample_data = []
 
@@ -197,12 +196,13 @@ fraction = 1.0 # reduce this is if you want quicker runtime (implemented in the 
 
 # Define empty dictionary to hold awkward arrays
 all_data = {}
-
+for s in samples:
+    print(s)
 # Loop over samples
 for s in samples:
 
     # Print which sample is being processed
-    print('Processing '+s+' samples')
+    #print('Processing '+s+' samples')
 
     # Define empty list to hold data
     frames = []
@@ -217,7 +217,7 @@ for s in samples:
 
         # start the clock
         start = time.time()
-        print("\t"+val+":")
+        #print("\t"+val+":")
 
         # Open file
         tree = uproot.open(fileString + ":analysis")
@@ -280,7 +280,7 @@ for s in samples:
                 nOut = len(data)
 
             elapsed = time.time() - start # time taken to process
-            print("\t\t nIn: "+str(nIn)+",\t nOut: \t"+str(nOut)+"\t in "+str(round(elapsed,1))+"s") # events before and after
+            #print("\t\t nIn: "+str(nIn)+",\t nOut: \t"+str(nOut)+"\t in "+str(round(elapsed,1))+"s") # events before and after
 
         frames.append(ak.concatenate(sample_data))
 
@@ -398,10 +398,10 @@ my_legend = main_axes.legend( frameon=False, fontsize=16 ) # no box around the l
 signal_tot = signal_heights[0] + mc_x_tot
 
 # Peak of signal
-print(signal_tot[18])
+#print(signal_tot[18])
 
 # Neighbouring bins
-print(signal_tot[17:20])
+#print(signal_tot[17:20])
 
 # Signal and background events
 N_sig = signal_tot[17:20].sum()
@@ -409,4 +409,4 @@ N_bg = mc_x_tot[17:20].sum()
 
 # Signal significance calculation
 signal_significance = N_sig/np.sqrt(N_bg + 0.3 * N_bg**2) # EXPLAIN THE 0.3
-print(f"\nResults:\n{N_sig = }\n{N_bg = }\n{signal_significance = }\n")
+#print(f"\nResults:\n{N_sig = }\n{N_bg = }\n{signal_significance = }\n")

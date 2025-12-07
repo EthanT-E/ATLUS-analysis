@@ -6,6 +6,4 @@ RUN pip install matplotlib numpy uproot awkward vector requests atlasopenmagic p
 
 COPY . .
 
-EXPOSE 8000
-
 CMD ["python", "./higgs_discovery.py"]

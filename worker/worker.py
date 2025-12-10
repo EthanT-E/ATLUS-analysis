@@ -163,30 +163,33 @@ killer_queue = channel.queue_declare(queue='', durable=True, exclusive=True)
 kill_queue_name = killer_queue.method.queue
 channel.queue_bind(queue=kill_queue_name, exchange='killer')
 
-counter = []
-
 
 def DataStream_callback(ch, method, properties, body):
-    print("rec")
     message = body.decode()
-    reply_message = calc_data(message)
-    reply_message = ak.to_list(reply_message)
+    message = json.loads(message)
+    # message_arr = message.split('<<<')
+    # print(f"recv {message_arr[1]}")
+    reply_message = {}
+    reply_message["Data"] = calc_data(message["URL"])
     ch.basic_ack(delivery_tag=method.delivery_tag)
-    if len(reply_message) > 1000:
-        size = len(reply_message)//4
-        for i in range(0, len(reply_message)//4, size):
-            temp_arr = reply_message[i:i+size]
+    print(len(reply_message["Data"]))
+    if len(reply_message["Data"]) > 1000:
+        size = len(reply_message["Data"])//10
+        for i in range(0, len(reply_message["Data"]), size):
+            print("chunk")
+            temp_arr = {}
+            temp_arr["Data"] = reply_message["Data"][i:i+size]
+            temp_arr["Type"] = message["Type"]
+            temp_arr["Data"] = ak.to_json(temp_arr["Data"])
             reply_chunk = json.dumps(temp_arr)
             ch.basic_publish(exchange='', routing_key=properties.reply_to, body=reply_chunk,
                              properties=pika.BasicProperties(correlation_id=properties.correlation_id))
-            counter.append(0)
-            print(f"{len(counter)} messages sent")
     else:
+        reply_message["Type"] = message["Type"]
+        reply_message["Data"] = ak.to_json(reply_message["Data"])
         reply_message = json.dumps(reply_message)
         ch.basic_publish(exchange='', routing_key=properties.reply_to, body=reply_message,
                          properties=pika.BasicProperties(correlation_id=properties.correlation_id))
-        counter.append(0)
-        print(f"{len(counter)} messages sent")
 
 
 def kill_callback(ch, method, properties, body):

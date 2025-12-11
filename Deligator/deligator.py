@@ -88,8 +88,6 @@ weight_variables = ["filteff", "kfac", "xsec", "mcWeight", "ScaleFactor_PILEUP",
                     "ScaleFactor_ELE", "ScaleFactor_MUON", "ScaleFactor_LepTRIGGER"]
 variables = ['lep_pt', 'lep_eta', 'lep_phi', 'lep_e', 'lep_charge', 'lep_type', 'trigE', 'trigM', 'lep_isTrigMatched',
              'lep_isLooseID', 'lep_isMediumID', 'lep_isLooseIso', 'lep_type']
-# Define empty dictionary to hold awkward arrays
-all_data = {}
 
 connection = pika.BlockingConnection(
     pika.ConnectionParameters(host='rabbitmq', heartbeat=10000))
@@ -148,20 +146,26 @@ frames_signal = []
 
 def callback(ch, method, properties, body):
     inter = body.decode()
-    # message_arr = inter.split('>>>')
-    # print(f"recv {message_arr[0]}")
     message = json.loads(inter)
     message["Data"] = ak.from_json(message["Data"])
     print(message["Type"])
     match message["Type"]:
         case 'Data':
+            print("added to Data")
             frames_data.append(message["Data"])
-        case 'Background $Z,t\bar{t},t\bar{t}+V,VVV$':
+        case r'Background $Z,t\bar{t},t\bar{t}+V,VVV$':
+            print("added to vvv")
             frames_vvv.append(message["Data"])
-        case 'Background $ZZ^{*}$':
+        case r'Background $ZZ^{*}$':
+            print("added to zz")
             frames_zz.append(message["Data"])
         case 'Signal ($m_H$ = 125 GeV)':
-            frames_signal.append(message["Data"])
+            if (len(message['Data']) != 0):
+                print("added to signal")
+                print(message['Data']['mass'])
+                frames_signal.append(message["Data"])
+            else:
+                print('empty message')
     rec.append(0)
     print(f"rec {len(rec)}")
     if (len(rec) == 120):
@@ -176,13 +180,18 @@ print("sent all")
 channel.basic_consume(
     queue='reply', on_message_callback=callback)
 channel.start_consuming()
-print(frames_data[0])
 print('all_rec')
 
-all_data['Data'] = frames_data
-all_data[r'Background $Z,t\bar{t},t\bar{t}+V,VVV$'] = frames_vvv
-all_data[r'Background $ZZ^{*}$'] = frames_zz
-all_data[r'Signal ($m_H$ = 125 GeV)'] = frames_signal
+all_data['Data'] = ak.concatenate(frames_data)
+all_data[r'Background $Z,t\bar{t},t\bar{t}+V,VVV$'] = ak.concatenate(
+    frames_vvv)
+all_data[r'Background $ZZ^{*}$'] = ak.concatenate(frames_zz)
+all_data[r'Signal ($m_H$ = 125 GeV)'] = ak.concatenate(frames_signal)
+
+print(f"num Data {len(all_data['Data'])}")
+print(f"num vvv {len(all_data[r'Background $Z,t\bar{t},t\bar{t}+V,VVV$'])}")
+print(f"num zz {len(all_data[r'Background $ZZ^{*}$'])}")
+print(f"num signal {len(all_data[r'Signal ($m_H$ = 125 GeV)'])}")
 
 step_size = 2.5 * GeV
 xmin = 80 * GeV
@@ -190,9 +199,21 @@ xmax = 250 * GeV
 bin_edges = np.arange(start=xmin,  # The interval includes this value
                       stop=xmax+step_size,  # The interval doesn't include this value
                       step=step_size)  # Spacing between values
+print(all_data['Data']['mass'])
+# print("Data")
+# for i in range(0, len(frames_data)):
+#     print(all_data['Data'][i]['mass'])
+# print("VVV")
+# for i in range(0, len(frames_vvv)):
+#     print(all_data[r'Background $Z,t\bar{t},t\bar{t}+V,VVV$'][i]['mass'])
+# print("ZZ")
+# for i in range(0, len(frames_zz)):
+#     print(all_data[r'Background $ZZ^{*}$'][i]['mass'])
+# print("Signal")
+# for i in range(0, len(frames_signal)):
+#     print(all_data[r'Signal ($m_H$ = 125 GeV)'][i]['mass'])
 
-print(all_data['Data'])
-data_x, _ = np.histogram(ak.to_numpy(all_data['Data']['mass']),
+data_x, _ = np.histogram(ak.to_numpy(all_data['Data'][:]['mass']),
                          bins=bin_edges)  # histogram the data
 data_x_errors = np.sqrt(data_x)  # statistical error on the data
 
@@ -222,6 +243,7 @@ for s in samples:  # loop over samples
 # *************
 # Main plot
 #
+
 xmin = 80 * GeV
 xmax = 250 * GeV
 
@@ -324,5 +346,24 @@ plt.text(0.1,  # x
 my_legend = main_axes.legend(frameon=False, fontsize=16)
 plt.savefig("/data/plot.png")
 
-# dictionary entry is concatenated awkward arrays
-# all_data[s] = ak.concatenate(frames)
+
+# Signal stacked height
+signal_tot = signal_heights[0] + mc_x_tot
+
+# Peak of signal
+print(signal_tot[18])
+
+# Neighbouring bins
+print(signal_tot[17:20])
+
+# Signal and background events
+N_sig = signal_tot[17:20].sum()
+N_bg = mc_x_tot[17:20].sum()
+
+# Signal significance calculation
+signal_significance = N_sig/np.sqrt(N_bg + 0.3 * N_bg**2)  # EXPLAIN THE 0.3
+print(f"\nResults:\n{N_sig=}\n{N_bg=}\n{signal_significance=}\n")
+with open("/data/results_file.txt", "w+") as f:
+    f.write(f"Peak of signal: {signal_tot[18]}\n")
+    f.write(f"Neighbouring bins: {signal_tot[17:20]}")
+    f.write(f"\nResults:\n{N_sig=}\n{N_bg=}\n{signal_significance=}\n")

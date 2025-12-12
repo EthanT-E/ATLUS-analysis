@@ -148,26 +148,19 @@ def callback(ch, method, properties, body):
     inter = body.decode()
     message = json.loads(inter)
     message["Data"] = ak.from_json(message["Data"])
-    print(message["Type"])
     match message["Type"]:
         case 'Data':
-            print("added to Data")
             frames_data.append(message["Data"])
         case r'Background $Z,t\bar{t},t\bar{t}+V,VVV$':
-            print("added to vvv")
             frames_vvv.append(message["Data"])
         case r'Background $ZZ^{*}$':
-            print("added to zz")
             frames_zz.append(message["Data"])
         case 'Signal ($m_H$ = 125 GeV)':
             if (len(message['Data']) != 0):
-                print("added to signal")
-                print(message['Data']['mass'])
                 frames_signal.append(message["Data"])
             else:
                 print('empty message')
     rec.append(0)
-    print(f"rec {len(rec)}")
     if (len(rec) == 120):
         channel.basic_publish(exchange='killer', routing_key='', body='kill',
                               properties=pika.BasicProperties(delivery_mode=pika.DeliveryMode.Persistent))
@@ -188,10 +181,6 @@ all_data[r'Background $Z,t\bar{t},t\bar{t}+V,VVV$'] = ak.concatenate(
 all_data[r'Background $ZZ^{*}$'] = ak.concatenate(frames_zz)
 all_data[r'Signal ($m_H$ = 125 GeV)'] = ak.concatenate(frames_signal)
 
-print(f"num Data {len(all_data['Data'])}")
-print(f"num vvv {len(all_data[r'Background $Z,t\bar{t},t\bar{t}+V,VVV$'])}")
-print(f"num zz {len(all_data[r'Background $ZZ^{*}$'])}")
-print(f"num signal {len(all_data[r'Signal ($m_H$ = 125 GeV)'])}")
 
 step_size = 2.5 * GeV
 xmin = 80 * GeV
@@ -363,7 +352,7 @@ N_bg = mc_x_tot[17:20].sum()
 # Signal significance calculation
 signal_significance = N_sig/np.sqrt(N_bg + 0.3 * N_bg**2)  # EXPLAIN THE 0.3
 print(f"\nResults:\n{N_sig=}\n{N_bg=}\n{signal_significance=}\n")
-with open("/data/results_file.txt", "w+") as f:
-    f.write(f"Peak of signal: {signal_tot[18]}\n")
+with open(r"/data/results_file.txt", "w+") as f:
+    f.write(f"Peak of signal: {signal_tot[18]}")
     f.write(f"Neighbouring bins: {signal_tot[17:20]}")
     f.write(f"\nResults:\n{N_sig=}\n{N_bg=}\n{signal_significance=}\n")

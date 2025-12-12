@@ -1,0 +1,43 @@
+services:
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "15672:15672"
+      - "5672:5672"
+    networks:
+      - rabbit
+    healthcheck:
+      test: rabbitmq-diagnostics -q ping
+      interval: 30s
+      timeout: 30s
+      retries: 3
+  deligator:
+    build: Deligator/.
+    networks:
+      - rabbit
+    volumes:
+      - data_store:/data
+    deploy:
+      mode: global
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+        restart: true
+  worker:
+    build: worker/.
+    networks:
+      - rabbit
+    deploy:
+      mode: replicated
+      replicas: 4
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+        restart: true
+
+networks:
+  rabbit:
+    driver: overlay
+    attachable: true
+volumes:
+  data_store:

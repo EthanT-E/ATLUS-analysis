@@ -80,7 +80,6 @@ def calc_data(fileString):
          "Background $ZZ^{*}$",
          "Signal ($m_H$ = 125 GeV)"]
     start = time.time()
-    print("\t"+fileString+":")
 
     # Open file
     tree = uproot.open(fileString + ":analysis")
@@ -172,11 +171,9 @@ def DataStream_callback(ch, method, properties, body):
     reply_message = {}
     reply_message["Data"] = calc_data(message["URL"])
     ch.basic_ack(delivery_tag=method.delivery_tag)
-    print(len(reply_message["Data"]))
     if len(reply_message["Data"]) > 1000:
         size = len(reply_message["Data"])//10
         for i in range(0, len(reply_message["Data"]), size):
-            print("chunk")
             temp_arr = {}
             temp_arr["Data"] = reply_message["Data"][i:i+size]
             temp_arr["Type"] = message["Type"]

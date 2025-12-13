@@ -29,7 +29,7 @@ services:
       - rabbit
     deploy:
       mode: replicated
-      replicas: 4
+      replicas: 5
     depends_on:
       rabbitmq:
         condition: service_healthy

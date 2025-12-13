@@ -119,7 +119,6 @@ all_data = {}
 for s in samples:
 
     # Print which sample is being processed
-    print('Processing '+s+' samples')
 
     # Define empty list to hold data
 
@@ -131,17 +130,16 @@ for s in samples:
         message["Type"] = s
         message["URL"] = val
         id = str(uuid.uuid4())
-        print(f"sent {s}")
         body = json.dumps(message)
         channel.basic_publish(exchange='', routing_key='DataStream', body=body,
                               properties=pika.BasicProperties(delivery_mode=pika.DeliveryMode.Persistent, correlation_id=id, reply_to='reply'))
-
-rec = []
 
 frames_data = []
 frames_vvv = []
 frames_zz = []
 frames_signal = []
+
+counter = 0
 
 
 def callback(ch, method, properties, body):
@@ -160,8 +158,10 @@ def callback(ch, method, properties, body):
                 frames_signal.append(message["Data"])
             else:
                 print('empty message')
-    rec.append(0)
-    if (len(rec) == 120):
+    global counter 
+    counter += 1
+    print(counter)
+    if (counter == 120):
         channel.basic_publish(exchange='killer', routing_key='', body='kill',
                               properties=pika.BasicProperties(delivery_mode=pika.DeliveryMode.Persistent))
         channel.stop_consuming()
@@ -339,12 +339,6 @@ plt.savefig("/data/plot.png")
 # Signal stacked height
 signal_tot = signal_heights[0] + mc_x_tot
 
-# Peak of signal
-print(signal_tot[18])
-
-# Neighbouring bins
-print(signal_tot[17:20])
-
 # Signal and background events
 N_sig = signal_tot[17:20].sum()
 N_bg = mc_x_tot[17:20].sum()
@@ -354,5 +348,5 @@ signal_significance = N_sig/np.sqrt(N_bg + 0.3 * N_bg**2)  # EXPLAIN THE 0.3
 print(f"\nResults:\n{N_sig=}\n{N_bg=}\n{signal_significance=}\n")
 with open(r"/data/results_file.txt", "w+") as f:
     f.write(f"Peak of signal: {signal_tot[18]}")
-    f.write(f"Neighbouring bins: {signal_tot[17:20]}")
+    f.write(f"\nNeighbouring bins: {signal_tot[17:20]}")
     f.write(f"\nResults:\n{N_sig=}\n{N_bg=}\n{signal_significance=}\n")

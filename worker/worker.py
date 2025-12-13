@@ -173,9 +173,15 @@ def DataStream_callback(ch, method, properties, body):
     ch.basic_ack(delivery_tag=method.delivery_tag)
     if len(reply_message["Data"]) > 1000:
         size = len(reply_message["Data"])//10
+
+        print(f"Chunked\t len = {
+              len(reply_message['Data'])} chunk size = {size}")
+
         for i in range(0, len(reply_message["Data"]), size):
+            print(f"Chunk {i} to {i+size}")
             temp_arr = {}
             temp_arr["Data"] = reply_message["Data"][i:i+size]
+            print(len(temp_arr["Data"]))
             temp_arr["Type"] = message["Type"]
             temp_arr["Data"] = ak.to_json(temp_arr["Data"])
             reply_chunk = json.dumps(temp_arr)

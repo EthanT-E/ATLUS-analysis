@@ -6,8 +6,6 @@ import time
 import pika
 import json
 
-
-atom.available_releases()
 atom.set_release('2025e-13tev-beta')
 
 

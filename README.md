@@ -1,4 +1,4 @@
-# ATLUS-analysis
+# ATLAS-analysis
 This is the docker compose version. to use Swarm switch and pull the Swarm branch
 ## prerequisites
 - docker

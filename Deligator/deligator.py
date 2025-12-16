@@ -15,12 +15,10 @@ MeV = 0.001
 GeV = 1.0
 
 sleep(10)  # Added to let network intialize
-atom.available_releases()
 atom.set_release('2025e-13tev-beta')
 
 # used Functions
 # Cut lepton type (electron type is 11,  muon type is 13)
-
 
 def cut_lep_type(lep_type):
     sum_lep_type = lep_type[:, 0] + lep_type[:, 1] + \
@@ -110,14 +108,8 @@ fraction = 1.0
 # Define empty dictionary to hold awkward arrays
 all_data = {}
 
-
 # Loop over samples
 for s in samples:
-
-    # Print which sample is being processed
-
-    # Define empty list to hold data
-
     # Loop over each file
     for val in samples[s]['list']:
         # start the clock
@@ -315,7 +307,6 @@ plt.text(0.1,  # x
 # no box around the legend
 my_legend = main_axes.legend(frameon=False, fontsize=16)
 plt.savefig("/data/plot.png")
-
 
 # Signal stacked height
 signal_tot = signal_heights[0] + mc_x_tot

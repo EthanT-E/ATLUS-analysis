@@ -9,10 +9,12 @@ import awkward as ak
 import vector
 import requests
 import uuid
+from time import sleep
 
 MeV = 0.001
 GeV = 1.0
 
+sleep(10)
 atom.available_releases()
 atom.set_release('2025e-13tev-beta')
 

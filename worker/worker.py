@@ -8,6 +8,7 @@ work send:
 '''
 import atlasopenmagic as atom
 import awkward as ak
+from time import sleep
 import uproot
 import vector
 import time
@@ -15,6 +16,7 @@ import pika
 import json
 
 
+sleep(10)
 atom.available_releases()
 atom.set_release('2025e-13tev-beta')
 

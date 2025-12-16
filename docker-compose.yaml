@@ -13,29 +13,25 @@ services:
       retries: 3
   deligator:
     build: Deligator/.
+    image: ethantrippedwards/atlas-assessment:deligator
     networks:
       - rabbit
     volumes:
       - data_store:/data
     deploy:
-      mode: global
+      mode: global-job
     depends_on:
-      rabbitmq:
-        condition: service_healthy
-        restart: true
+      - rabbitmq
   worker:
     build: worker/.
+    image: ethantrippedwards/atlas-assessment:worker
     networks:
       - rabbit
     deploy:
-      mode: replicated
+      mode: replicated-job
       replicas: 5
-      restart_policy:
-        condition: on-failure
     depends_on:
-      rabbitmq:
-        condition: service_healthy
-        restart: true
+      - rabbitmq
 
 networks:
   rabbit:

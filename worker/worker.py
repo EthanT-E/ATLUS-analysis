@@ -1,11 +1,3 @@
-'''
-worker recv:
--samples
-
-work send:
--all_data
-
-'''
 import atlasopenmagic as atom
 import awkward as ak
 import uproot
@@ -31,21 +23,17 @@ def cut_lep_type(lep_type):
         lep_type[:, 2] + lep_type[:, 3]
     lep_type_cut_bool = (sum_lep_type != 44) & (
         sum_lep_type != 48) & (sum_lep_type != 52)
-    # True means we should remove this entry (lepton type does not match)
     return lep_type_cut_bool
 
 
 def cut_lep_charge(lep_charge):
-    # first lepton in each event is [:, 0], 2nd lepton is [:, 1] etc
     sum_lep_charge = lep_charge[:, 0] + lep_charge[:,
                                                    1] + lep_charge[:, 2] + lep_charge[:, 3] != 0
-    # True means we should remove this entry (sum of lepton charges is not equal to 0)
     return sum_lep_charge
 
 
 def calc_mass(lep_pt, lep_eta, lep_phi, lep_e):
     p4 = vector.zip({"pt": lep_pt, "eta": lep_eta, "phi": lep_phi, "E": lep_e})
-    # .M calculates the invariant mass
     invariant_mass = (p4[:, 0] + p4[:, 1] + p4[:, 2] + p4[:, 3]).M
     return invariant_mass
 
@@ -90,7 +78,6 @@ def calc_data(fileString):
     for data in tree.iterate(variables + weight_variables + ["sum_of_weights", "lep_n"],
                              library="ak",
                              entry_stop=tree.num_entries*fraction):  # , # process up to numevents*fraction
-        #  step_size = 10000000):
 
         # Number of events in this batch
         nIn = len(data)
@@ -169,7 +156,7 @@ def DataStream_callback(ch, method, properties, body):
     reply_message = {}
     reply_message["Data"] = calc_data(message["URL"])
     ch.basic_ack(delivery_tag=method.delivery_tag)
-    if len(reply_message["Data"]) > 1000:
+    if len(reply_message["Data"]) > 1000:  # Chunks Data if larger than 1000
         size = len(reply_message["Data"])//10
         for i in range(0, len(reply_message["Data"]), size):
             temp_arr = {}

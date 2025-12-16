@@ -16,19 +16,13 @@ GeV = 1.0
 atom.available_releases()
 atom.set_release('2025e-13tev-beta')
 
-# used Functions
-# Cut lepton type (electron type is 11,  muon type is 13)
-
 
 def cut_lep_type(lep_type):
     sum_lep_type = lep_type[:, 0] + lep_type[:, 1] + \
         lep_type[:, 2] + lep_type[:, 3]
     lep_type_cut_bool = (sum_lep_type != 44) & (
         sum_lep_type != 48) & (sum_lep_type != 52)
-    # True means we should remove this entry (lepton type does not match)
     return lep_type_cut_bool
-
-# Cut lepton charge
 
 
 def cut_lep_charge(lep_charge):
@@ -38,13 +32,9 @@ def cut_lep_charge(lep_charge):
     # True means we should remove this entry (sum of lepton charges is not equal to 0)
     return sum_lep_charge
 
-# Calculate invariant mass of the 4-lepton state
-# [:, i] selects the i-th lepton in each event
-
 
 def calc_mass(lep_pt, lep_eta, lep_phi, lep_e):
     p4 = vector.zip({"pt": lep_pt, "eta": lep_eta, "phi": lep_phi, "E": lep_e})
-    # .M calculates the invariant mass
     invariant_mass = (p4[:, 0] + p4[:, 1] + p4[:, 2] + p4[:, 3]).M
     return invariant_mass
 
@@ -97,12 +87,6 @@ channel.queue_declare(queue='DataStream', durable=True)
 channel.queue_declare(queue='reply', durable=True)
 channel.exchange_declare('killer', exchange_type='fanout')
 
-
-# def callback(ch, method, properties, body):
-#     message = json.loads(body.decode())
-#     ch.basic_ack(delivery_tag=method.delivery_tag)
-
-
 # Loop over samples
 # Set luminosity to 36.6 fb-1, data size of the full release
 lumi = 36.6
@@ -118,13 +102,8 @@ all_data = {}
 # Loop over samples
 for s in samples:
 
-    # Print which sample is being processed
-
-    # Define empty list to hold data
-
     # Loop over each file
     for val in samples[s]['list']:
-        # WorkerRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR
         # start the clock
         message = {}
         message["Type"] = s
@@ -319,7 +298,7 @@ plt.text(0.1,  # x
 # draw the legend
 # no box around the legend
 my_legend = main_axes.legend(frameon=False, fontsize=16)
-plt.savefig("/data/plot.png")
+plt.savefig("/data/plot.png")  # save fig in volume
 
 
 # Signal stacked height
@@ -329,8 +308,8 @@ signal_tot = signal_heights[0] + mc_x_tot
 N_sig = signal_tot[17:20].sum()
 N_bg = mc_x_tot[17:20].sum()
 
-# Signal significance calculation
-signal_significance = N_sig/np.sqrt(N_bg + 0.3 * N_bg**2)  # EXPLAIN THE 0.3
+# Signal significance calculation save to file
+signal_significance = N_sig/np.sqrt(N_bg + 0.3 * N_bg**2)
 with open(r"/data/results_file.txt", "w+") as f:
     f.write(f"Peak of signal: {signal_tot[18]}")
     f.write(f"\nNeighbouring bins: {signal_tot[17:20]}")

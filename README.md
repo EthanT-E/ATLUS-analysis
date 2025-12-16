@@ -1,4 +1,4 @@
-# ATLUS-analysis
+# ATLAS-analysis
 This is the Swarm version. to use Compose switch and pull the main branch
 ## prerequisites
 - docker

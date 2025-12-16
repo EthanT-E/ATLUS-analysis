@@ -158,9 +158,8 @@ def callback(ch, method, properties, body):
                 frames_signal.append(message["Data"])
             else:
                 print('empty message')
-    global counter 
+    global counter
     counter += 1
-    print(counter)
     if (counter == 120):
         channel.basic_publish(exchange='killer', routing_key='', body='kill',
                               properties=pika.BasicProperties(delivery_mode=pika.DeliveryMode.Persistent))
@@ -188,21 +187,8 @@ xmax = 250 * GeV
 bin_edges = np.arange(start=xmin,  # The interval includes this value
                       stop=xmax+step_size,  # The interval doesn't include this value
                       step=step_size)  # Spacing between values
-print(all_data['Data']['mass'])
-# print("Data")
-# for i in range(0, len(frames_data)):
-#     print(all_data['Data'][i]['mass'])
-# print("VVV")
-# for i in range(0, len(frames_vvv)):
-#     print(all_data[r'Background $Z,t\bar{t},t\bar{t}+V,VVV$'][i]['mass'])
-# print("ZZ")
-# for i in range(0, len(frames_zz)):
-#     print(all_data[r'Background $ZZ^{*}$'][i]['mass'])
-# print("Signal")
-# for i in range(0, len(frames_signal)):
-#     print(all_data[r'Signal ($m_H$ = 125 GeV)'][i]['mass'])
 
-data_x, _ = np.histogram(ak.to_numpy(all_data['Data'][:]['mass']),
+data_x, _ = np.histogram(ak.to_numpy(all_data['Data']['mass']),
                          bins=bin_edges)  # histogram the data
 data_x_errors = np.sqrt(data_x)  # statistical error on the data
 
@@ -310,7 +296,7 @@ plt.text(0.1,  # x
 # Add text 'for education' on plot
 plt.text(0.1,  # x
          0.88,  # y
-         'for education',  # text
+         'for education, used by Ethan Tripp-Edwards',  # text
          transform=main_axes.transAxes,  # coordinate system used is that of main_axes
          style='italic',
          fontsize=12)
@@ -345,7 +331,6 @@ N_bg = mc_x_tot[17:20].sum()
 
 # Signal significance calculation
 signal_significance = N_sig/np.sqrt(N_bg + 0.3 * N_bg**2)  # EXPLAIN THE 0.3
-print(f"\nResults:\n{N_sig=}\n{N_bg=}\n{signal_significance=}\n")
 with open(r"/data/results_file.txt", "w+") as f:
     f.write(f"Peak of signal: {signal_tot[18]}")
     f.write(f"\nNeighbouring bins: {signal_tot[17:20]}")

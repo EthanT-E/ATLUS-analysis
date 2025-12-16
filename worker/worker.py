@@ -9,7 +9,6 @@ import json
 
 
 sleep(10)  # lets network warm up
-atom.available_releases()
 atom.set_release('2025e-13tev-beta')
 
 
@@ -69,6 +68,16 @@ fraction = 1.0
 
 
 def calc_data(fileString):
+    '''
+    description:
+        Makes the cut from a database and then returns the proccessed data
+    parameters:
+        string fileString:
+            URL of the Database to process
+    returns:
+        ak.Array sample_data:
+            The processed data in an awkward array
+    '''
     s = ["Data",
          'Background $Z,t\bar{t},t\bar{t}+V,VVV$',
          "Background $ZZ^{*}$",

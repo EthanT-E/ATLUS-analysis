@@ -13,7 +13,6 @@ import uuid
 MeV = 0.001
 GeV = 1.0
 
-atom.available_releases()
 atom.set_release('2025e-13tev-beta')
 
 

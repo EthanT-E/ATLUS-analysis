@@ -1,11 +1,3 @@
-'''
-worker recv:
--samples
-
-work send:
--all_data
-
-'''
 import atlasopenmagic as atom
 import awkward as ak
 from time import sleep
@@ -16,7 +8,7 @@ import pika
 import json
 
 
-sleep(10)
+sleep(10)  # lets network warm up
 atom.available_releases()
 atom.set_release('2025e-13tev-beta')
 
@@ -92,7 +84,6 @@ def calc_data(fileString):
     for data in tree.iterate(variables + weight_variables + ["sum_of_weights", "lep_n"],
                              library="ak",
                              entry_stop=tree.num_entries*fraction):  # , # process up to numevents*fraction
-        #  step_size = 10000000):
 
         # Number of events in this batch
         nIn = len(data)
@@ -171,7 +162,7 @@ def DataStream_callback(ch, method, properties, body):
     reply_message = {}
     reply_message["Data"] = calc_data(message["URL"])
     ch.basic_ack(delivery_tag=method.delivery_tag)
-    if len(reply_message["Data"]) > 1000:
+    if len(reply_message["Data"]) > 1000:  # Chunks data if it is larger than 1000
         size = len(reply_message["Data"])//10
         for i in range(0, len(reply_message["Data"]), size):
             temp_arr = {}

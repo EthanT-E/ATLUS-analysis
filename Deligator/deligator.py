@@ -14,7 +14,7 @@ from time import sleep
 MeV = 0.001
 GeV = 1.0
 
-sleep(10)
+sleep(10)  # Added to let network intialize
 atom.available_releases()
 atom.set_release('2025e-13tev-beta')
 
@@ -100,12 +100,6 @@ channel.queue_declare(queue='reply', durable=True)
 channel.exchange_declare('killer', exchange_type='fanout')
 
 
-# def callback(ch, method, properties, body):
-#     message = json.loads(body.decode())
-#     ch.basic_ack(delivery_tag=method.delivery_tag)
-
-
-# Loop over samples
 # Set luminosity to 36.6 fb-1, data size of the full release
 lumi = 36.6
 
@@ -126,7 +120,6 @@ for s in samples:
 
     # Loop over each file
     for val in samples[s]['list']:
-        # WorkerRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR
         # start the clock
         message = {}
         message["Type"] = s
@@ -162,7 +155,7 @@ def callback(ch, method, properties, body):
                 print('empty message')
     global counter
     counter += 1
-    if (counter == 120):
+    if (counter == 120):  # IMPORTANT Change the number to the number of replies
         channel.basic_publish(exchange='killer', routing_key='', body='kill',
                               properties=pika.BasicProperties(delivery_mode=pika.DeliveryMode.Persistent))
         channel.stop_consuming()
@@ -331,8 +324,8 @@ signal_tot = signal_heights[0] + mc_x_tot
 N_sig = signal_tot[17:20].sum()
 N_bg = mc_x_tot[17:20].sum()
 
-# Signal significance calculation
-signal_significance = N_sig/np.sqrt(N_bg + 0.3 * N_bg**2)  # EXPLAIN THE 0.3
+# Signal significance calculation and write to file
+signal_significance = N_sig/np.sqrt(N_bg + 0.3 * N_bg**2)
 with open(r"/data/results_file.txt", "w+") as f:
     f.write(f"Peak of signal: {signal_tot[18]}")
     f.write(f"\nNeighbouring bins: {signal_tot[17:20]}")
